@@ -12,7 +12,7 @@ const CODE_SNIPPETS = [
   ">> ALERT: Potential SQL Injection payload isolated.",
   "Injecting counter-measures against zero-day exploit...",
   "Model inference complete. Confidence: 99.8%",
-  "Parsing logs: /var/log/auth.log - parsing active sessions...",
+  "Parsing security telemetry logs - correlating active endpoint sessions...",
   "Fetching API endpoint /api/v1/fraud-score...",
   "[System] Allocating dynamic memory for tensor operations...",
   "Simulating adversarial prompt injection... FAILED.",
