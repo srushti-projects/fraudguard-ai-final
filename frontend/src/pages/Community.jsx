@@ -5,8 +5,8 @@ import FilterBar from '../components/FilterBar';
 import PostCard from '../components/PostCard';
 import CreatePostModal from '../components/CreatePostModal';
 import DashboardLayout from '../components/DashboardLayout';
+import { API_ROUTES } from '../config/api';
 
-const API = 'http://localhost:8000';
 const FILTERS = ['Trending', 'Most Trusted', 'Latest'];
 
 export default function Community() {
@@ -17,7 +17,7 @@ export default function Community() {
 
   // ── Fetch posts on mount ───────────────────────────────────────────────
   useEffect(() => {
-    fetch(`${API}/community/posts`)
+    fetch(`${API_ROUTES.community}/posts`)
       .then(res => res.json())
       .then(data => {
         const formatted = data.map(p => ({
@@ -42,7 +42,7 @@ export default function Community() {
 
   // ── Create post ─────────────────────────────────────────────────────────
   const handleCreatePost = (newPostData) => {
-    fetch(`${API}/community/post`, {
+    fetch(`${API_ROUTES.community}/post`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

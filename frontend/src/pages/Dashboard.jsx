@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, MessageSquare, Mail, Link as LinkIcon, Image as ImageIcon, Mic, Video, Terminal, AlertOctagon } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, XAxis, Tooltip, YAxis, CartesianGrid } from 'recharts';
+import { API_ROUTES } from '../config/api';
 
 const CONFIG = {
   sms: { label: 'SMS/Chat', icon: MessageSquare, color: '#22d3ee' }, // Cyan
@@ -77,8 +78,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     const endpoint = dataSource === 'community' 
-      ? 'http://localhost:8000/api/trends' 
-      : 'http://localhost:8000/reddit/stats/trend';
+      ? API_ROUTES.trends
+      : API_ROUTES.redditTrends;
 
     fetch(endpoint)
       .then(res => res.json())

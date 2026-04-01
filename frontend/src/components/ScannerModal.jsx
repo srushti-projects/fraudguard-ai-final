@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShieldCheck, ShieldAlert, AlertTriangle, Loader2, UploadCloud } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8000/api';
+import { API_ROUTES } from '../config/api';
 
 // Maps display label → backend API type string
 const TYPE_MAP = {
@@ -77,7 +76,7 @@ export default function ScannerModal({ type, onClose }) {
       let response;
 
       // New direct /scan/ endpoints
-      const scanUrl = `${API_BASE.replace('/api', '/scan')}/${apiType}`;
+      const scanUrl = `${API_ROUTES.scan}/${apiType}`;
 
       if (isFileScan) {
         // multipart/form-data for file

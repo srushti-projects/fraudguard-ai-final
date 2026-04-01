@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User } from 'lucide-react';
+import { API_ROUTES } from '../config/api';
 
-const API = 'http://localhost:8000';
 const ANON_KEY = 'fraudguard-anon-name';
 
 function getAnonymousName() {
@@ -24,7 +24,7 @@ export default function CommentSection({ postId, onCommentAdded }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API}/community/comments/${postId}`);
+      const res = await fetch(`${API_ROUTES.community}/comments/${postId}`);
       if (!res.ok) {
         throw new Error('Failed to fetch comments.');
       }
@@ -55,7 +55,7 @@ export default function CommentSection({ postId, onCommentAdded }) {
     setSubmitting(true);
     setError('');
     try {
-      const res = await fetch(`${API}/community/comment/${postId}`, {
+      const res = await fetch(`${API_ROUTES.community}/comment/${postId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

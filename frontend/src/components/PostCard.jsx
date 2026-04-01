@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThumbsUp, ThumbsDown, MessageSquare, User, AlertTriangle } from 'lucide-react';
 import CommentSection from './CommentSection';
+import { API_ROUTES } from '../config/api';
 
 const TAG_STYLES = {
   SMS: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]',
@@ -23,7 +24,7 @@ export default function PostCard({ post }) {
   const handleLike = () => { 
     if (!liked) {
       if(post.id) {
-         fetch(`http://localhost:8000/community/upvote/${post.id}`, { method: 'POST' }).catch(err => console.error("Error upvoting:", err));
+         fetch(`${API_ROUTES.community}/upvote/${post.id}`, { method: 'POST' }).catch(err => console.error("Error upvoting:", err));
       }
       setLiked(true);
       setDisliked(false);
