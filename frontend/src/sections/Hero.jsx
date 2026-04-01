@@ -108,7 +108,7 @@ export default function Hero() {
             transition={{ duration: 1, delay: 0.8 }}
             className="text-xl md:text-2xl text-gray-300 font-inter font-light tracking-wide max-w-3xl mx-auto"
           >
-            AI-powered protection against scams, fraud, and digital threats.
+            Multi-modal neural protection against deepfakes, prompt injection, and zero-day digital fraud.
           </motion.p>
         </motion.div>
         

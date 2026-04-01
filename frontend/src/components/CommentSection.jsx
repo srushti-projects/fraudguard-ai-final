@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User } from 'lucide-react';
 
-export default function CommentSection({ comments: initialComments }) {
+export default function CommentSection({ postId, comments: initialComments }) {
   const [comments, setComments] = useState(initialComments || []);
   const [newComment, setNewComment] = useState('');
 
@@ -10,6 +10,11 @@ export default function CommentSection({ comments: initialComments }) {
     if (!newComment.trim()) return;
     setComments([...comments, { id: Date.now(), text: newComment, author: 'You', avatar: null }]);
     setNewComment('');
+    
+    if (postId) {
+      fetch(`http://localhost:8000/community/comment/${postId}`, { method: 'POST' })
+        .catch(err => console.error("Error updating comment count:", err));
+    }
   };
 
   return (

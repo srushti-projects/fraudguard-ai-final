@@ -1,5 +1,10 @@
-node_modules/
-frontend/node_modules/
-dist/
-frontend/dist/
+__pycache__/
+*.pyc
+*.pkl
+*.db
 .env
+node_modules/
+dist/
+test_*.txt
+tmp.py
+tree_gen.py

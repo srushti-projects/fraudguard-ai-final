@@ -4,10 +4,14 @@ import { ThumbsUp, ThumbsDown, MessageSquare, User, AlertTriangle } from 'lucide
 import CommentSection from './CommentSection';
 
 const TAG_STYLES = {
-  SMS: 'text-sage-400 bg-sage-500/10 border-sage-500/50 shadow-[0_0_10px_rgba(0,255,157,0.2)]',
-  Email: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.2)]',
-  URL: 'text-blue-400 bg-blue-500/10 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.2)]',
-  Image: 'text-teal-400 bg-teal-500/10 border-teal-500/50 shadow-[0_0_10px_rgba(20,184,166,0.2)]',
+  SMS: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]',
+  Email: 'text-orange-400 bg-orange-500/10 border-orange-500/50 shadow-[0_0_10px_rgba(251,146,60,0.2)]',
+  URL: 'text-green-400 bg-green-500/10 border-green-500/50 shadow-[0_0_10px_rgba(74,222,128,0.2)]',
+  Image: 'text-purple-400 bg-purple-500/10 border-purple-500/50 shadow-[0_0_10px_rgba(192,132,252,0.2)]',
+  Audio: 'text-pink-400 bg-pink-500/10 border-pink-500/50 shadow-[0_0_10px_rgba(244,114,182,0.2)]',
+  Video: 'text-blue-400 bg-blue-500/10 border-blue-500/50 shadow-[0_0_10px_rgba(96,165,250,0.2)]',
+  'Prompt Injection': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/50 shadow-[0_0_10px_rgba(250,204,21,0.2)]',
+  Jailbreak: 'text-red-400 bg-red-500/10 border-red-500/50 shadow-[0_0_10px_rgba(248,113,113,0.2)]',
 };
 
 export default function PostCard({ post }) {
@@ -15,10 +19,20 @@ export default function PostCard({ post }) {
   const [disliked, setDisliked] = useState(false);
   const [showComments, setShowComments] = useState(false);
 
-  const handleLike = () => { setLiked(!liked); if (!liked) setDisliked(false); };
+  const handleLike = () => { 
+    if (!liked) {
+      if(post.id) {
+         fetch(`http://localhost:8000/community/upvote/${post.id}`, { method: 'POST' }).catch(err => console.error("Error upvoting:", err));
+      }
+      setLiked(true);
+      setDisliked(false);
+    } else {
+      setLiked(false);
+    }
+  };
   const handleDislike = () => { setDisliked(!disliked); if (!disliked) setLiked(false); };
 
-  const tagStyle = TAG_STYLES[post.type] || 'text-sage-400 bg-sage-500/10 border-sage-500/50 shadow-[0_0_10px_rgba(0,255,157,0.2)]';
+  const tagStyle = TAG_STYLES[post.type] || 'text-cyan-400 bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]';
 
   return (
     <motion.div
@@ -97,7 +111,7 @@ export default function PostCard({ post }) {
       </div>
 
       <AnimatePresence>
-        {showComments && <CommentSection comments={post.comments} />}
+        {showComments && <CommentSection postId={post.id} comments={post.comments} />}
       </AnimatePresence>
     </motion.div>
   );

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 export default function FilterBar({ filters, activeFilter, onSelect }) {
   return (
-    <div className="flex items-center justify-center gap-3 overflow-x-auto pb-4 mb-8 scrollbar-hide">
+    <div className="flex items-center justify-center gap-3 overflow-x-auto scrollbar-hide">
       {filters.map((filter) => {
         const isActive = activeFilter === filter;
         return (

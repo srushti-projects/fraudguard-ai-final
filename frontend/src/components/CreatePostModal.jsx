@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UploadCloud, AlertCircle } from 'lucide-react';
 
-const SCAM_TYPES = ['SMS', 'Email', 'URL', 'Image'];
+const SCAM_TYPES = ['SMS', 'Email', 'URL', 'Image', 'Audio', 'Video', 'Prompt Injection', 'Jailbreak'];
 
 export default function CreatePostModal({ onClose, onSubmit }) {
   const [content, setContent] = useState('');

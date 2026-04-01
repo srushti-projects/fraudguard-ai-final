@@ -8,7 +8,7 @@ export default function CTA() {
           Secure Your Digital Identity
         </h2>
         <p className="text-gray-400 mb-12 text-lg font-inter">
-          Join thousands of users protected by our state-of-the-art AI defense mechanisms.
+          Join thousands of users protected by our state-of-the-art 8-vector AI defense mechanics.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">

@@ -1,166 +1,154 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Flame, ShieldAlert, Zap } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import FilterBar from '../components/FilterBar';
 import PostCard from '../components/PostCard';
 import CreatePostModal from '../components/CreatePostModal';
+import DashboardLayout from '../components/DashboardLayout';
 
-// Dummy dataset simulating initial intelligence feed Let's make it look incredibly cyber/scam related
-const INITIAL_POSTS = [
-  {
-    id: 1,
-    username: 'CipherNode_09',
-    avatar: 'https://images.unsplash.com/photo-1543269664-7eef42226a21?auto=format&fit=crop&q=80&w=150',
-    type: 'SMS',
-    content: 'WARNING: New package delivery scam mimicking USPS. The payload link redirects to a credential harvester masked as a re-scheduling fee portal. Do NOT click tracking links originating from non-short-code numbers.',
-    image: null,
-    likes: 342,
-    dislikes: 12,
-    comments: [
-      { id: 101, text: 'Saw this yesterday, almost fell for it. Thanks for the heads up.', author: 'SysAdmin_Pete' },
-      { id: 102, text: 'The fake domain is registered in Panama. Adding to blacklist.', author: 'NetSec_Ops' }
-    ],
-    timestamp: '2 hours ago',
-    score: 342 + 2, // Dummy trending score
-  },
-  {
-    id: 2,
-    username: 'NeoCortex',
-    avatar: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=150',
-    type: 'Image',
-    content: 'Deepfake investment scam circulating on Instagram Reels. The audio is synthetic (listen for aberrant breathing artifacts) but mimics Elon Musk perfectly. They are pushing a fake crypto presale.',
-    image: 'https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?auto=format&fit=crop&q=80&w=800',
-    likes: 890,
-    dislikes: 3,
-    comments: [],
-    timestamp: '5 hours ago',
-    score: 890,
-  },
-  {
-    id: 3,
-    username: 'Ghost_Protocol',
-    avatar: null,
-    type: 'URL',
-    content: 'Found a malicious domain homoglyph attack. They registered "paypal.com" but used a Cyrillic "a". Bypasses standard visual checks easily. Reported to registrars, but it\'s still active as of 0900 UTC.',
-    image: null,
-    likes: 156,
-    dislikes: 0,
-    comments: [
-      { id: 103, text: 'Classic IDN homograph. Modern browsers should flag this, what browser did they test on?', author: 'ZeroDay_Hunter' }
-    ],
-    timestamp: '15 mins ago',
-    score: 156 + 1,
-  },
-  {
-    id: 4,
-    username: 'Securita_Max',
-    avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=150',
-    type: 'Email',
-    content: 'Spear-phishing campaign explicitly targeting HR departments. Email contains a PDF titled "Q3_Updated_Benefits.pdf" which executes an obfuscated macro dropping a remote access trojan. Header spoofs internal domains.',
-    image: null,
-    likes: 210,
-    dislikes: 4,
-    comments: [
-      { id: 104, text: 'We just blocked this across our tenant.', author: 'CorpSec_Lead' }
-    ],
-    timestamp: '1 day ago',
-    score: 210 + 1,
-  }
-];
-
+const API = 'http://localhost:8000';
 const FILTERS = ['Trending', 'Most Trusted', 'Latest'];
 
 export default function Community() {
-  const [posts, setPosts] = useState(INITIAL_POSTS);
+  const [posts, setPosts]           = useState([]);
   const [activeFilter, setActiveFilter] = useState('Trending');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen]   = useState(false);
+  const [loading, setLoading]           = useState(true);
 
-  // Sorting logic for dummy data
-  const sortedPosts = useMemo(() => {
-    switch (activeFilter) {
-      case 'Trending':
-        // Sort by arbitrary "score" (likes + comments approx)
-        return [...posts].sort((a, b) => b.score - a.score);
-      case 'Most Trusted':
-        // Sort by highest likes minus dislikes ratio
-        return [...posts].sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
-      case 'Latest':
-        // Sort by ID descending assuming higher ID = newer (since it's dummy)
-        return [...posts].sort((a, b) => b.id - a.id);
-      default:
-        return posts;
-    }
-  }, [posts, activeFilter]);
+  // ── Fetch posts on mount ───────────────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API}/community/posts`)
+      .then(res => res.json())
+      .then(data => {
+        const formatted = data.map(p => ({
+          id:        p.id,
+          username:  'Anonymous Node',
+          avatar:    null,
+          type:      normaliseType(p.type),
+          content:   p.content,
+          image:     null,
+          likes:     p.likes_count || p.votes || 0,
+          dislikes:  0,
+          comments:  new Array(p.comments_count || 0).fill(null).map((_, i) => ({ id: i, text: 'Intelligence report classified.', author: 'Community Node', avatar: null })),
+          timestamp: new Date((p.created_at || p.timestamp) + 'Z').toLocaleDateString(),
+          score:     p.engagement_score || p.votes || 0,
+        }));
+        setPosts(formatted);
+      })
+      .catch(err => console.error('[Community] fetch error:', err))
+      .finally(() => setLoading(false));
+  }, []);
 
+  // ── Create post ─────────────────────────────────────────────────────────
   const handleCreatePost = (newPostData) => {
-    const newPost = {
-      id: Date.now(),
-      username: 'You',
-      avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=150',
-      type: newPostData.type,
-      content: newPostData.content,
-      image: newPostData.image,
-      likes: 0,
-      dislikes: 0,
-      comments: [],
-      timestamp: 'Just now',
-      score: 0,
-    };
-    
-    // Add to top of feed
-    setPosts([newPost, ...posts]);
-    setIsModalOpen(false);
+    fetch(`${API}/community/post`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title:       `New ${newPostData.type} Threat`,
+        description: 'Community generated alert.',
+        type:        newPostData.type.toLowerCase(),
+        content:     newPostData.content,
+      }),
+    })
+      .then(res => res.json())
+      .then(p => {
+        const newPost = {
+          id:        p.id,
+          username:  'You',
+          avatar:    null,
+          type:      normaliseType(p.type),
+          content:   p.content,
+          image:     newPostData.image || null,
+          likes:     p.likes_count || p.votes || 0,
+          dislikes:  0,
+          comments:  [],
+          timestamp: 'Just now',
+          score:     p.engagement_score || p.votes || 0,
+        };
+        setPosts(prev => [newPost, ...prev]);
+        setIsModalOpen(false);
+      })
+      .catch(err => console.error('[Community] create post error:', err));
   };
 
+  // ── Sort ────────────────────────────────────────────────────────────────
+  const sortedPosts = useMemo(() => {
+    const copy = [...posts];
+    if (activeFilter === 'Trending')     return copy.sort((a, b) => b.score - a.score);
+    if (activeFilter === 'Most Trusted') return copy.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
+    if (activeFilter === 'Latest')       return copy.sort((a, b) => b.id - a.id);
+    return copy;
+  }, [posts, activeFilter]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="flex flex-col items-center w-full min-h-screen pt-28 px-4 z-20 overflow-x-hidden relative"
-    >
-      <div className="w-full max-w-2xl flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-orbitron font-bold text-white mb-2 flex items-center gap-3 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-            THREAT <span className="text-sage-400 drop-shadow-[0_0_15px_rgba(0,255,157,0.8)] animate-pulse">FEED</span>
-          </h1>
-          <p className="text-gray-400 font-inter text-sm md:text-base tracking-wide drop-shadow-[0_0_5px_rgba(255,255,255,0.05)]">
-            Decentralized intelligence reporting. Stay ahead of zero-days.
-          </p>
-        </div>
-      </div>
-
-      <div className="w-full max-w-2xl">
-        <FilterBar 
-          filters={FILTERS} 
-          activeFilter={activeFilter} 
-          onSelect={setActiveFilter} 
-        />
-      </div>
-
-      <div className="w-full max-w-2xl pb-24">
-        <AnimatePresence mode="popLayout">
-          {sortedPosts.map(post => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {isModalOpen && (
-        <CreatePostModal 
-          onClose={() => setIsModalOpen(false)} 
-          onSubmit={handleCreatePost} 
-        />
-      )}
-
-      {/* Floating Action Button for Create Post */}
-      <button 
-        onClick={() => setIsModalOpen(true)}
-        className="fixed bottom-10 right-10 group flex items-center justify-center w-16 h-16 bg-sage-500 rounded-full shadow-[0_0_30px_rgba(0,255,157,0.5)] hover:bg-sage-400 hover:shadow-[0_0_50px_rgba(0,255,157,0.8)] hover:-translate-y-1 transition-all duration-300 z-50 overflow-hidden"
+    <DashboardLayout>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="flex flex-col items-center w-full relative z-20"
       >
-        <div className="absolute inset-0 w-1/2 h-full bg-white/30 skew-x-12 -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700 ease-in-out pointer-events-none"></div>
-        <Plus className="w-8 h-8 text-black drop-shadow-md relative z-10 font-bold" />
-      </button>
-    </motion.div>
+        <div className="w-full flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-orbitron font-bold text-white mb-2 flex items-center gap-3">
+              THREAT <span className="text-sage-400 drop-shadow-[0_0_15px_rgba(0,255,157,0.8)] animate-pulse">FEED</span>
+            </h1>
+            <p className="text-gray-400 font-inter text-sm md:text-base tracking-wide">
+              Decentralized intelligence reporting. Stay ahead of zero-days.
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+          <div className="w-full sm:w-auto overflow-x-auto scrollbar-hide">
+            <FilterBar filters={FILTERS} activeFilter={activeFilter} onSelect={setActiveFilter} />
+          </div>
+          
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 px-6 py-2.5 rounded-full bg-white/5 border border-sage-500/50 text-sage-400 hover:bg-sage-500/20 hover:text-white hover:border-sage-400 shadow-[0_0_15px_rgba(0,255,157,0.1)] hover:shadow-[0_0_20px_rgba(0,255,157,0.4)] transition-all font-orbitron font-semibold tracking-wide text-sm"
+          >
+            <Plus className="w-4 h-4" /> Create Post
+          </button>
+        </div>
+
+        <div className="w-full pb-24">
+          {loading ? (
+            <div className="text-center text-gray-400 py-16 font-orbitron tracking-widest animate-pulse">
+              Loading threat feed...
+            </div>
+          ) : sortedPosts.length === 0 ? (
+            <div className="text-center text-gray-500 py-16 font-orbitron tracking-widest">
+              No posts yet. Be the first to report a threat.
+            </div>
+          ) : (
+          <AnimatePresence mode="popLayout">
+            {sortedPosts.map(post => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </AnimatePresence>
+        )}
+        </div>
+
+        {isModalOpen && (
+          <CreatePostModal onClose={() => setIsModalOpen(false)} onSubmit={handleCreatePost} />
+        )}
+      </motion.div>
+    </DashboardLayout>
   );
+}
+
+// ── Helper ──────────────────────────────────────────────────────────────────
+function normaliseType(raw = '') {
+  const t = raw.toLowerCase();
+  if (t === 'sms')   return 'SMS';
+  if (t === 'email') return 'Email';
+  if (t === 'url')   return 'URL';
+  if (t === 'image') return 'Image';
+  if (t === 'audio') return 'Audio';
+  if (t === 'video') return 'Video';
+  if (t === 'prompt') return 'Prompt Injection';
+  if (t === 'jailbreak') return 'Jailbreak';
+  return 'SMS';
 }

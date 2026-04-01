@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Hero from '../sections/Hero';
 import Features from '../sections/Features';
 import CTA from '../sections/CTA';
+import BackgroundTypingEffect from '../components/BackgroundTypingEffect';
 
 export default function Landing() {
   return (
@@ -12,6 +13,7 @@ export default function Landing() {
       exit={{ opacity: 0 }}
       className="flex flex-col w-full"
     >
+      <BackgroundTypingEffect />
       <Hero />
       <Features />
       <CTA />

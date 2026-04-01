@@ -1,16 +1,17 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { MessageSquareWarning, MailWarning, Link2, ScanFace, Users, TrendingUp, ShieldCheck } from 'lucide-react';
+import { MailWarning, Link2, ScanFace, Mic, Video, Terminal, Unlock, MessageSquareWarning } from 'lucide-react';
 import FeatureCard from '../components/FeatureCard';
 
 const FEATURES = [
-  { id: 1, title: 'SMS Scam Detection', description: 'Real-time analysis to identify malicious smishing attempts before they reach you.', icon: MessageSquareWarning },
-  { id: 2, title: 'Email Fraud Detection', description: 'Advanced AI filters for deep phishing and BEC attacks, securing your inbox.', icon: MailWarning },
-  { id: 3, title: 'Malicious URL Scanner', description: 'Instant deep-scan of hyperlinks across all sources to verify authenticity.', icon: Link2 },
-  { id: 4, title: 'AI Image Scam Detection', description: 'Detect deepfakes and manipulated images used in identity fraud.', icon: ScanFace },
-  { id: 5, title: 'Community Scam Reports', description: 'Crowdsourced threat intelligence shared globally to prevent repeated attacks.', icon: Users },
-  { id: 6, title: 'Scam Trend Analytics', description: 'Predictive modeling identifying emerging cyber threats in your region.', icon: TrendingUp },
-  { id: 7, title: 'Trust Score System', description: 'Dynamic credibility scoring for senders, domains, and specific transactions.', icon: ShieldCheck },
+  { id: 1, title: 'SMS & Chat Shield', description: 'NLP-driven analysis to identify malicious smishing and chat-based attacks instantly.', icon: MessageSquareWarning, color: '#00FFFF' },
+  { id: 2, title: 'Email Phishing Defense', description: 'Advanced heuristic scanning to detect BEC and sophisticated email phishing campaigns.', icon: MailWarning, color: '#FF8A00' },
+  { id: 3, title: 'Malicious URL Scanner', description: 'Deep lexical and structural analysis verifying the authenticity of high-risk domains and links.', icon: Link2, color: '#00FF9D' },
+  { id: 4, title: 'Image Manipulation Detection', description: 'Advanced spatial anomaly tracing to identify AI-generated images and visual identity fraud.', icon: ScanFace, color: '#B026FF' },
+  { id: 5, title: 'Acoustic Audio Deepfakes', description: 'Neural MFCC feature extraction designed to spot AI-cloned voices and synthetic audio fraud.', icon: Mic, color: '#FF007F' },
+  { id: 6, title: 'Video & Stream Tracing', description: 'Spatio-temporal frame sequencing to catch deepfakes and advanced visual tampering in media.', icon: Video, color: '#0066FF' },
+  { id: 7, title: 'Prompt Injection Firewall', description: 'Real-time LLM input defense identifying intentional semantic payload manipulations.', icon: Terminal, color: '#FFD700' },
+  { id: 8, title: 'Jailbreak Neutralization', description: 'Detects and mitigates heuristic bypass behaviors engineered to break foundational AI safety limits.', icon: Unlock, color: '#FF003C' },
 ];
 
 const containerVariants = {
@@ -40,7 +41,7 @@ export default function Features() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-orbitron font-bold text-white mb-4 drop-shadow-[0_0_15px_rgba(0,255,157,0.2)]">Core Defenses</h2>
-          <p className="text-sage-400 font-inter text-lg">Next-generation security for absolute peace of mind.</p>
+          <p className="text-sage-400 font-inter text-lg">Multi-modal neural protection across all digital vectors.</p>
         </div>
 
         <motion.div 
@@ -48,10 +49,10 @@ export default function Features() {
           variants={containerVariants}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 justify-center"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 justify-center"
         >
-          {FEATURES.map((feature, idx) => (
-             <motion.div key={feature.id} variants={cardVariants} className={idx === 6 ? "sm:col-span-2 lg:col-span-1 lg:col-start-2 place-self-center lg:place-self-auto w-full max-w-[400px] lg:max-w-none justify-self-center" : ""}> 
+          {FEATURES.map((feature) => (
+             <motion.div key={feature.id} variants={cardVariants} className="w-full"> 
                <FeatureCard {...feature} />
              </motion.div>
           ))}
