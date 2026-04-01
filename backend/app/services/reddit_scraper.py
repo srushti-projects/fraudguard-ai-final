@@ -3,7 +3,10 @@ import requests
 import json
 import logging
 import threading
-from apscheduler.schedulers.background import BackgroundScheduler
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+except ModuleNotFoundError:
+    BackgroundScheduler = None
 from app.database import get_db_connection
 from app.services.ml_scanner import run_scan
 
@@ -99,6 +102,10 @@ def scrape_reddit_job():
     logger.info("Reddit Scraping Job Completed.")
 
 def start_scraper():
+    if BackgroundScheduler is None:
+        logger.warning("APScheduler is not installed; Reddit scraper scheduler disabled.")
+        return
+
     def _run_bg():
         scrape_reddit_job()
         

@@ -17,7 +17,11 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.on_event("startup")
 def startup_event():
-    start_scraper()
+    try:
+        start_scraper()
+    except Exception:
+        # Keep API startup resilient if optional background jobs fail.
+        pass
 
 app.add_middleware(
     CORSMiddleware,
