@@ -43,4 +43,5 @@ model.fit(X_train, y_train)
 joblib.dump(model, BASE_DIR / "ml/url/url_model.pkl")
 joblib.dump(scaler, BASE_DIR / "ml/url/url_scaler.pkl")
 
+print("Accuracy:", model.score(X_test, y_test))
 print("✅ URL model trained successfully (OPTIMIZED)")

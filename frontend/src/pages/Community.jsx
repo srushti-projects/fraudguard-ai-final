@@ -29,7 +29,8 @@ export default function Community() {
           image:     null,
           likes:     p.likes_count || p.votes || 0,
           dislikes:  0,
-          comments:  new Array(p.comments_count || 0).fill(null).map((_, i) => ({ id: i, text: 'Intelligence report classified.', author: 'Community Node', avatar: null })),
+          comments_count: p.comments_count || 0,
+          comments:  [],
           timestamp: new Date((p.created_at || p.timestamp) + 'Z').toLocaleDateString(),
           score:     p.engagement_score || p.votes || 0,
         }));

@@ -125,7 +125,13 @@ def run_scan(scan_type, input_data):
     """
 
     if scan_type not in models or not models[scan_type].get("model"):
-        return {"error": "Invalid or missing model for scan type"}
+        return {
+            "prediction": 0,
+            "label": "Safe",
+            "confidence": 0.0,
+            "error": "Invalid or missing model for scan type",
+            "details": "Model load error"
+        }
 
     model_data = models[scan_type]
     model = model_data["model"]
@@ -148,7 +154,13 @@ def run_scan(scan_type, input_data):
             scaler = model_data["scaler"]
 
             if not isinstance(input_data, dict):
-                return {"error": "URL input must be a feature dictionary"}
+                return {
+                    "prediction": 0,
+                    "label": "Safe",
+                    "confidence": 0.0,
+                    "error": "URL input must be a feature dictionary",
+                    "details": "Fallback URL scan"
+                }
 
             X = np.array([list(input_data.values())])
             X_scaled = scaler.transform(X)
@@ -178,7 +190,13 @@ def run_scan(scan_type, input_data):
             prob = model.predict_proba(X)[0]
 
         else:
-            return {"error": "Unsupported scan type"}
+            return {
+                "prediction": 0,
+                "label": "Safe",
+                "confidence": 0.0,
+                "error": "Unsupported scan type",
+                "details": "Invalid module specified"
+            }
 
         # ==============================
         # FORMAT OUTPUT

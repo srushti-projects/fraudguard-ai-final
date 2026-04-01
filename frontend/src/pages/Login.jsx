@@ -3,16 +3,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AuthBox from '../components/AuthBox';
 import InputField from '../components/InputField';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if(email && password) {
-       navigate('/dashboard');
+      const success = await login(email, password);
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError("Invalid email or password");
+      }
     }
   };
 
@@ -27,6 +35,7 @@ export default function Login() {
         <form onSubmit={handleLogin} className="flex flex-col mt-4">
           <InputField label="Email Address" type="email" placeholder="agent@fraudguard.ai" value={email} onChange={(e) => setEmail(e.target.value)} />
           <InputField label="Password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <button type="submit" className="mt-8 w-full py-4 bg-sage-500 text-black font-orbitron font-bold text-lg rounded-xl transition-all duration-300 hover:bg-sage-400 shadow-[0_0_20px_rgba(0,255,157,0.3)] hover:shadow-[0_0_30px_rgba(0,255,157,0.6)] hover:-translate-y-1 active:scale-95 uppercase tracking-widest">
             Login
           </button>

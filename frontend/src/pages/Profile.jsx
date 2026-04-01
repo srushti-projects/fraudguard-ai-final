@@ -1,15 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Camera, User, Mail, Phone, Calendar, ShieldCheck, Activity, Edit3 } from 'lucide-react';
+import { Camera, User, Mail, Phone, Calendar, ShieldCheck, Activity, Edit3, Save, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 export default function Profile() {
+  const { user, setUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profilePic, setProfilePic] = useState('https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200');
+  
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone_number: '',
+    bio: ''
+  });
 
-  const handleImageChange = (e) => {
-    // Dummy image change simulation
-    setProfilePic('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200');
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        full_name: user.full_name || '',
+        phone_number: user.phone_number || '',
+        bio: user.bio || ''
+      });
+    }
+  }, [user]);
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const data = new FormData();
+      data.append('file', file);
+      try {
+        const res = await axios.post(`/auth/upload-profile-pic/${user.id}`, data, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        const fullUrl = axios.defaults.baseURL + res.data.profile_image_url;
+        const updatedUser = { ...user, profile_image_url: fullUrl };
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      } catch (err) {
+        console.error('Failed to upload image', err);
+      }
+    }
   };
+
+  const handleSave = async () => {
+    try {
+      const res = await axios.put(`/auth/profile/${user.id}`, formData);
+      setUser(res.data);
+      localStorage.setItem('user', JSON.stringify(res.data));
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Failed to update profile', err);
+    }
+  };
+
+  if (!user) return <div className="text-white pt-32 text-center">Loading profile...</div>;
+
+  const profilePic = user.profile_image_url 
+    ? (user.profile_image_url.startsWith('http') ? user.profile_image_url : `${axios.defaults.baseURL}${user.profile_image_url}`)
+    : 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&q=80&w=200';
 
   return (
     <div className="pt-32 pb-24 px-6 mx-auto max-w-5xl min-h-[calc(100vh-80px)] flex relative z-10 w-full justify-center">
@@ -35,19 +85,47 @@ export default function Profile() {
             </div>
 
             {/* Name & Badge */}
-            <h2 className="text-3xl font-orbitron font-bold text-white tracking-wide drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] leading-none text-center">AdminGuardian</h2>
+            {isEditing ? (
+              <input 
+                type="text" 
+                value={formData.full_name} 
+                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                className="bg-black/50 border border-sage-500/50 rounded px-3 py-1 text-white text-center font-orbitron font-bold text-xl outline-none w-full"
+              />
+            ) : (
+              <h2 className="text-3xl font-orbitron font-bold text-white tracking-wide drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] leading-none text-center">
+                {user.full_name || user.username}
+              </h2>
+            )}
+            
             <p className="text-sage-400 font-inter text-sm font-medium tracking-wide mt-3 mb-8 flex items-center justify-center gap-2">
               <ShieldCheck className="w-4 h-4" /> Level 5 Sentinel
             </p>
 
             {/* Edit Button */}
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className="w-full py-3.5 mb-8 rounded-xl bg-white/5 border border-white/10 hover:border-sage-500/50 hover:bg-sage-500/10 hover:shadow-[0_0_20px_rgba(0,255,157,0.2)] text-sage-300 hover:text-white font-orbitron text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
-            >
-              <Edit3 className="w-4 h-4" />
-              {isEditing ? 'Save Profile' : 'Edit Profile'}
-            </button>
+            {isEditing ? (
+              <div className="flex w-full gap-2 mb-8">
+                <button 
+                  onClick={handleSave}
+                  className="flex-1 py-3.5 rounded-xl bg-sage-500 text-black hover:bg-sage-400 font-orbitron text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Save className="w-4 h-4" /> Save
+                </button>
+                <button 
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 transition-all duration-300 flex items-center justify-center active:scale-95"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="w-full py-3.5 mb-8 rounded-xl bg-white/5 border border-white/10 hover:border-sage-500/50 hover:bg-sage-500/10 hover:shadow-[0_0_20px_rgba(0,255,157,0.2)] text-sage-300 hover:text-white font-orbitron text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+              >
+                <Edit3 className="w-4 h-4" /> Edit Profile
+              </button>
+            )}
 
             {/* Info Section Rows */}
             <div className="w-full flex flex-col gap-6">
@@ -55,9 +133,9 @@ export default function Profile() {
                 <div className="bg-white/5 p-3 rounded-xl border border-white/10 shrink-0 hover:border-sage-500/50 transition-colors">
                    <Mail className="w-5 h-5 text-sage-400" />
                 </div>
-                <div className="flex flex-col flex-1 justify-center">
+                <div className="flex flex-col flex-1 justify-center overflow-hidden">
                   <p className="text-gray-500 text-[10px] font-orbitron tracking-widest uppercase leading-tight mb-1">Email</p>
-                  <p className="text-gray-100 text-sm font-medium leading-none">admin@fraudguard.net</p>
+                  <p className="text-gray-100 text-sm font-medium leading-none truncate">{user.email}</p>
                 </div>
               </div>
 
@@ -65,9 +143,18 @@ export default function Profile() {
                 <div className="bg-white/5 p-3 rounded-xl border border-white/10 shrink-0 hover:border-sage-500/50 transition-colors">
                    <Phone className="w-5 h-5 text-sage-400" />
                 </div>
-                <div className="flex flex-col flex-1 justify-center">
+                <div className="flex flex-col flex-1 justify-center overflow-hidden">
                   <p className="text-gray-500 text-[10px] font-orbitron tracking-widest uppercase leading-tight mb-1">Phone</p>
-                  <p className="text-gray-100 text-sm font-medium leading-none">+1 (555) 019-8372</p>
+                  {isEditing ? (
+                    <input 
+                      type="tel" 
+                      value={formData.phone_number} 
+                      onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
+                      className="bg-black/50 border border-sage-500/50 rounded px-2 py-1 text-white text-sm outline-none w-full"
+                    />
+                  ) : (
+                    <p className="text-gray-100 text-sm font-medium leading-none truncate">{user.phone_number || 'Not provided'}</p>
+                  )}
                 </div>
               </div>
 
@@ -77,7 +164,9 @@ export default function Profile() {
                 </div>
                 <div className="flex flex-col flex-1 justify-center">
                   <p className="text-gray-500 text-[10px] font-orbitron tracking-widest uppercase leading-tight mb-1">Joined</p>
-                  <p className="text-gray-100 text-sm font-medium leading-none">October 2025</p>
+                  <p className="text-gray-100 text-sm font-medium leading-none">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -98,9 +187,18 @@ export default function Profile() {
                <h3 className="font-orbitron font-bold text-xl text-white tracking-wider flex items-center gap-3 drop-shadow-[0_0_5px_rgba(0,255,157,0.2)]">
                  <User className="w-5 h-5 text-sage-400" /> Operator Bio
                </h3>
-               <p className="text-gray-400 font-inter text-sm leading-relaxed max-w-2xl">
-                 Senior threat analyst reporting from the frontlines. Dedicated to reverse-engineering deceptive architectures and providing actionable intelligence to the FraudGuard neural network. Current focus: SMS-based payload delivery systems.
-               </p>
+               {isEditing ? (
+                 <textarea 
+                   value={formData.bio} 
+                   onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                   className="bg-black/50 border border-sage-500/50 rounded p-3 text-gray-300 text-sm outline-none w-full h-24 resize-none"
+                   placeholder="Enter your bio..."
+                 />
+               ) : (
+                 <p className="text-gray-400 font-inter text-sm leading-relaxed max-w-2xl">
+                   {user.bio || "No bio provided. Update your profile to add one."}
+                 </p>
+               )}
              </div>
 
              {/* Score Block */}

@@ -1,9 +1,31 @@
 import sqlite3
 from pathlib import Path
 from datetime import datetime
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 DB_PATH = Path(__file__).resolve().parent.parent / "fraudguard.db"
 
+# SQLALCHEMY SETUP
+SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+# Dependency to get DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# LEGACY RAW SQLITE3 SETUP FOR EXISTING ML/COMMUNITY TABLES
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -19,9 +41,16 @@ def init_db():
             votes INTEGER DEFAULT 0,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             likes_count INTEGER DEFAULT 0,
-            comments_count INTEGER DEFAULT 0
+            comments_count INTEGER DEFAULT 0,
+            author TEXT DEFAULT 'Anonymous User'
         )
     ''')
+
+    # Apply schema updates gracefully to existing DB
+    try:
+        cursor.execute("ALTER TABLE scam_records ADD COLUMN author TEXT DEFAULT 'Anonymous User'")
+    except:
+        pass
 
     # Apply schema updates gracefully to existing DB
     try:
@@ -36,6 +65,17 @@ def init_db():
         cursor.execute("UPDATE scam_records SET likes_count = votes WHERE likes_count = 0")
     except:
         pass
+        
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS post_comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL,
+            username TEXT NOT NULL,
+            comment_text TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(post_id) REFERENCES scam_records(id)
+        )
+    ''')
     
     # Create an index for engagement_score ordering optimization
     try:
@@ -110,5 +150,6 @@ def seed_db():
         conn.commit()
     conn.close()
 
+# Keep initializing legacy logic
 init_db()
 seed_db()

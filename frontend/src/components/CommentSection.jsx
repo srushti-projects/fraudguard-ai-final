@@ -1,19 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
-export default function CommentSection({ postId, comments: initialComments }) {
-  const [comments, setComments] = useState(initialComments || []);
+export default function CommentSection({ postId }) {
+  const { user } = useAuth();
+  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-    setComments([...comments, { id: Date.now(), text: newComment, author: 'You', avatar: null }]);
-    setNewComment('');
-    
+  useEffect(() => {
     if (postId) {
-      fetch(`http://localhost:8000/community/comment/${postId}`, { method: 'POST' })
-        .catch(err => console.error("Error updating comment count:", err));
+      axios.get(`/community/comments/${postId}`)
+        .then(res => {
+          setComments(res.data);
+          setLoading(false);
+        })
+        .catch(err => {
+          console.error("Error fetching comments:", err);
+          setLoading(false);
+        });
+    }
+  }, [postId]);
+
+  const handleAddComment = async () => {
+    if (!newComment.trim() || !user) return;
+    
+    try {
+      await axios.post(`/community/comment/${postId}`, {
+        username: user.username,
+        comment_text: newComment
+      });
+      
+      const newCommentObj = { 
+        id: Date.now(), 
+        text: newComment, 
+        author: user.username, 
+        avatar: user.profile_image_url || null 
+      };
+      
+      setComments([...comments, newCommentObj]);
+      setNewComment('');
+    } catch (err) {
+      console.error("Error posting comment:", err);
     }
   };
 
@@ -26,7 +56,9 @@ export default function CommentSection({ postId, comments: initialComments }) {
     >
       <div className="flex flex-col gap-4 mb-4">
         <AnimatePresence>
-          {comments.length === 0 ? (
+          {loading ? (
+            <div className="text-gray-500 text-xs animate-pulse px-2 font-orbitron">Syncing intelligence...</div>
+          ) : comments.length === 0 ? (
             <div className="text-gray-500 text-sm italic font-inter px-2">No intelligence recorded yet. Add your analysis.</div>
           ) : (
             comments.map((comment, index) => (

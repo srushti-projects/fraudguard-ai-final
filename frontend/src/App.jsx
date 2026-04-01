@@ -4,25 +4,18 @@ import { AnimatePresence } from 'framer-motion';
 import SpotlightCursor from './components/SpotlightCursor';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Scanner from './pages/Scanner';
 import Community from './pages/Community';
-import Profile from './pages/Profile';
 
 function AnimatedRoutes() {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/scanner" element={<Scanner />} />
         <Route path="/community" element={<Community />} />
-        <Route path="/profile" element={<Profile />} />
       </Routes>
     </AnimatePresence>
   );

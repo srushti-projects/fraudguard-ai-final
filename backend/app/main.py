@@ -1,9 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import detect, community, trends, scan_routes, reddit
+from fastapi.staticfiles import StaticFiles
+import os
+
+from app.routes import detect, community, trends, scan_routes, reddit, auth
 from app.services.reddit_scraper import start_scraper
+from app.database import engine, Base
+
+# Auto-create SQLAlchemy tables
+Base.metadata.create_all(bind=engine)
+os.makedirs("uploads", exist_ok=True)
 
 app = FastAPI(title="FraudGuard API", version="1.0.0")
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.on_event("startup")
 def startup_event():
@@ -32,6 +42,8 @@ app.include_router(trends.router, prefix="/analytics")
 
 # reddit routes -> /reddit
 app.include_router(reddit.router)
+# auth -> /auth
+app.include_router(auth.router)
 
 @app.get("/")
 def root():

@@ -40,4 +40,5 @@ model.fit(X_vec, y)
 joblib.dump(model, Path(__file__).parent / "email_model.pkl")
 joblib.dump(vectorizer, Path(__file__).parent / "email_vectorizer.pkl")
 
+print("Accuracy:", model.score(X_vec, y))
 print("✅ Email model trained successfully")

@@ -1,12 +1,20 @@
-import { Link, useLocation } from 'react-router-dom';
-import { ShieldAlert, Home, Shield, Users, User } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShieldAlert, Home, Shield, Users, User, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
   const isLanding = location.pathname === "/";
   const isAuth = location.pathname === "/login" || location.pathname === "/signup";
   const isInterior = !isLanding && !isAuth;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <motion.nav 
@@ -44,6 +52,10 @@ export default function Navbar() {
                 <span className={`font-orbitron font-semibold tracking-wide transition-colors ${location.pathname === '/profile' ? 'text-sage-400 drop-shadow-[0_0_8px_rgba(0,255,157,0.6)]' : 'text-gray-400 group-hover:text-white'}`}>Profile</span>
                 {location.pathname === '/profile' && <span className="absolute -bottom-2 w-full h-[2px] bg-sage-400 shadow-[0_0_10px_rgba(0,255,157,0.8)]"></span>}
               </Link>
+              <button onClick={handleLogout} className="relative group flex items-center justify-center gap-2 hover:bg-red-500/10 px-3 py-1 rounded transition-colors">
+                <LogOut className="w-4 h-4 text-gray-400 group-hover:text-red-400 transition-all duration-300" />
+                <span className="font-orbitron font-semibold tracking-wide text-gray-400 group-hover:text-red-400 transition-colors">Logout</span>
+              </button>
             </div>
           )}
 
