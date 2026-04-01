@@ -18,6 +18,7 @@ export default function PostCard({ post }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.comments_count ?? post.comments.length);
 
   const handleLike = () => { 
     if (!liked) {
@@ -106,12 +107,12 @@ export default function PostCard({ post }) {
           <div className={`p-2 rounded-full transition-colors ${showComments ? 'bg-blue-500/20' : 'bg-transparent group-hover:bg-white/5'}`}>
             <MessageSquare className={`w-4 h-4 transition-transform group-active:scale-90 ${showComments ? 'fill-blue-400 text-blue-400 shadow-[0_0_10px_currentColor]' : ''}`} />
           </div>
-          <span className="font-medium">{post.comments_count !== undefined ? post.comments_count : post.comments.length} Comments</span>
+          <span className="font-medium">{commentsCount} Comments</span>
         </button>
       </div>
 
       <AnimatePresence>
-        {showComments && <CommentSection postId={post.id} />}
+        {showComments && <CommentSection postId={post.id} onCommentAdded={() => setCommentsCount((prev) => prev + 1)} />}
       </AnimatePresence>
     </motion.div>
   );

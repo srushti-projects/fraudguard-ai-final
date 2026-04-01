@@ -1,49 +1,84 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, User } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
 
-export default function CommentSection({ postId }) {
-  const { user } = useAuth();
+const API = 'http://localhost:8000';
+const ANON_KEY = 'fraudguard-anon-name';
+
+function getAnonymousName() {
+  const existing = localStorage.getItem(ANON_KEY);
+  if (existing) return existing;
+  const generated = `Anonymous-${Math.floor(Math.random() * 9000) + 1000}`;
+  localStorage.setItem(ANON_KEY, generated);
+  return generated;
+}
+
+export default function CommentSection({ postId, onCommentAdded }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const loadComments = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API}/community/comments/${postId}`);
+      if (!res.ok) {
+        throw new Error('Failed to fetch comments.');
+      }
+      const data = await res.json();
+      setComments(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError('Unable to load comments right now.');
+      console.error('Error fetching comments:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (postId) {
-      axios.get(`/community/comments/${postId}`)
-        .then(res => {
-          setComments(res.data);
-          setLoading(false);
-        })
-        .catch(err => {
-          console.error("Error fetching comments:", err);
-          setLoading(false);
-        });
+      loadComments();
     }
   }, [postId]);
 
   const handleAddComment = async () => {
-    if (!newComment.trim() || !user) return;
-    
+    const trimmed = newComment.trim();
+    if (!trimmed || submitting) return;
+    if (comments.some((c) => c.text?.trim().toLowerCase() === trimmed.toLowerCase())) {
+      setError('Duplicate comment detected. Please add a unique comment.');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
     try {
-      await axios.post(`/community/comment/${postId}`, {
-        username: user.username,
-        comment_text: newComment
+      const res = await fetch(`${API}/community/comment/${postId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: getAnonymousName(),
+          comment_text: trimmed,
+        }),
       });
-      
-      const newCommentObj = { 
-        id: Date.now(), 
-        text: newComment, 
-        author: user.username, 
-        avatar: user.profile_image_url || null 
-      };
-      
-      setComments([...comments, newCommentObj]);
+
+      const payload = await res.json();
+      if (!res.ok) {
+        throw new Error(payload.detail || 'Failed to submit comment.');
+      }
+
+      setComments((prev) => [...prev, payload.comment]);
       setNewComment('');
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
     } catch (err) {
-      console.error("Error posting comment:", err);
+      setError(err.message || 'Unable to submit comment.');
+      console.error('Error posting comment:', err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -97,12 +132,14 @@ export default function CommentSection({ postId }) {
         />
         <button
           onClick={handleAddComment}
-          disabled={!newComment.trim()}
+          disabled={!newComment.trim() || submitting}
           className="p-2.5 rounded-full bg-sage-500/20 text-sage-400 hover:bg-sage-500 hover:text-black hover:shadow-[0_0_15px_rgba(0,255,157,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-sage-500/50 flex-shrink-0"
+          aria-label="Add comment"
         >
           <Send className="w-4 h-4 ml-0.5" />
         </button>
       </div>
+      {error && !loading && <div className="text-red-400 text-sm px-2 mt-3 font-inter">{error}</div>}
     </motion.div>
   );
 }

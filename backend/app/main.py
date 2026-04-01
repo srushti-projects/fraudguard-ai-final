@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 
-from app.routes import detect, community, trends, scan_routes, reddit, auth
+from app.routes import detect, community, trends, scan_routes, reddit
 from app.services.reddit_scraper import start_scraper
 from app.database import engine, Base
 
@@ -42,9 +42,6 @@ app.include_router(trends.router, prefix="/analytics")
 
 # reddit routes -> /reddit
 app.include_router(reddit.router)
-# auth -> /auth
-app.include_router(auth.router)
-
 @app.get("/")
 def root():
     # force uvicorn reload 4

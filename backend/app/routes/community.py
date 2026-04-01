@@ -88,23 +88,43 @@ class CommentRequest(BaseModel):
 @router.post("/comment/{post_id}")
 def add_comment(post_id: int, req: CommentRequest):
     try:
+        cleaned_comment = req.comment_text.strip()
+        cleaned_username = req.username.strip() or "Anonymous User"
+        if not cleaned_comment:
+            raise HTTPException(status_code=400, detail="Comment cannot be empty")
+
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO post_comments (post_id, username, comment_text) VALUES (?, ?, ?)",
-                       (post_id, req.username, req.comment_text))
-        cursor.execute("UPDATE scam_records SET comments_count = comments_count + 1 WHERE id = ?", (post_id,))
-        
-        if cursor.rowcount == 0:
+
+        cursor.execute("SELECT id FROM scam_records WHERE id = ?", (post_id,))
+        if cursor.fetchone() is None:
             conn.close()
             raise HTTPException(status_code=404, detail="Post not found")
-            
+
+        cursor.execute(
+            "SELECT id FROM post_comments WHERE post_id = ? AND LOWER(username) = LOWER(?) AND LOWER(comment_text) = LOWER(?)",
+            (post_id, cleaned_username, cleaned_comment),
+        )
+        if cursor.fetchone() is not None:
+            conn.close()
+            raise HTTPException(status_code=409, detail="Duplicate comment")
+
+        cursor.execute(
+            "INSERT INTO post_comments (post_id, username, comment_text) VALUES (?, ?, ?)",
+            (post_id, cleaned_username, cleaned_comment),
+        )
+        comment_id = cursor.lastrowid
+        cursor.execute("UPDATE scam_records SET comments_count = comments_count + 1 WHERE id = ?", (post_id,))
         conn.commit()
-        cursor.execute("SELECT comments_count FROM scam_records WHERE id = ?", (post_id,))
-        row = cursor.fetchone()
-        updated_comments = row["comments_count"] if row else 0
+
+        cursor.execute(
+            "SELECT id, username as author, comment_text as text, created_at FROM post_comments WHERE id = ?",
+            (comment_id,),
+        )
+        comment_row = cursor.fetchone()
         conn.close()
-        
-        return {"comments_count": updated_comments}
+
+        return {"comment": dict(comment_row)}
     except HTTPException:
         raise
     except Exception as e:

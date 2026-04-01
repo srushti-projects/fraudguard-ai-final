@@ -12,11 +12,11 @@ export default function CTA() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <Link to="/signup" className="px-8 py-4 font-orbitron font-bold text-black bg-sage-500 rounded-lg w-full sm:w-auto hover:bg-sage-400 shadow-[0_0_20px_rgba(0,255,157,0.4)] hover:shadow-[0_0_30px_rgba(0,255,157,0.6)] transition-all duration-300 transform hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-wider text-center">
-            Sign Up Now
+          <Link to="/dashboard" className="px-8 py-4 font-orbitron font-bold text-black bg-sage-500 rounded-lg w-full sm:w-auto hover:bg-sage-400 shadow-[0_0_20px_rgba(0,255,157,0.4)] hover:shadow-[0_0_30px_rgba(0,255,157,0.6)] transition-all duration-300 transform hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-wider text-center">
+            Enter Dashboard
           </Link>
-          <Link to="/login" className="px-8 py-4 font-orbitron font-bold text-white glass-panel border border-sage-500/40 rounded-lg w-full sm:w-auto hover:bg-white/5 hover:border-sage-400 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-wider text-center">
-            Login
+          <Link to="/community" className="px-8 py-4 font-orbitron font-bold text-white glass-panel border border-sage-500/40 rounded-lg w-full sm:w-auto hover:bg-white/5 hover:border-sage-400 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 text-lg uppercase tracking-wider text-center">
+            Explore Community
           </Link>
         </div>
       </div>
